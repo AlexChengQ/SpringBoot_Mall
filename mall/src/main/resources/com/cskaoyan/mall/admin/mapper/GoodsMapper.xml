@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cskaoyan.mall.admin.mapper.GoodsMapper">
+    <resultMap id="BaseResultMap" type="com.cskaoyan.mall.admin.bean.Goods">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="category_id" jdbcType="VARCHAR" property="categoryId" />
+        <result column="brand_id" jdbcType="VARCHAR" property="brandId" />
+        <result column="gallery" jdbcType="VARCHAR" property="gallery" typeHandler="com.cskaoyan.mall.admin.typeHandler.StringToStingrArrayHandler" />
+        <result column="keywords" jdbcType="VARCHAR" property="keywords" />
+        <result column="brief" jdbcType="VARCHAR" property="brief" />
+        <result column="is_on_sale" jdbcType="VARCHAR" property="isOnSale" />
+        <result column="sort_order" jdbcType="VARCHAR" property="sortOrder" />
+        <result column="pic_url" jdbcType="VARCHAR" property="picUrl" />
+        <result column="share_url" jdbcType="VARCHAR" property="shareUrl" />
+        <result column="is_new" jdbcType="VARCHAR" property="isNew" />
+        <result column="is_hot" jdbcType="VARCHAR" property="isHot" />
+        <result column="unit" jdbcType="VARCHAR" property="unit" />
+        <result column="counter_price" jdbcType="VARCHAR" property="counterPrice" />
+        <result column="retail_price" jdbcType="VARCHAR" property="retailPrice" />
+        <result column="detail" jdbcType="VARCHAR" property="detail" />
+        <result column="add_time" jdbcType="VARCHAR" property="addTime" />
+        <result column="update_time" jdbcType="VARCHAR" property="updateTime" />
+        <result column="deleted" jdbcType="VARCHAR" property="deleted" />
+        <result column="goods_sn" jdbcType="VARCHAR" property="goodsSn" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,goods_sn,`name`,category_id,brand_id,
+        gallery,keywords,brief,is_on_sale,sort_order,pic_url,share_url,
+        is_new,is_hot,unit,counter_price,retail_price,detail,add_time,
+        update_time,deleted
+    </sql>
+
+    <sql id="WxGoods_Column_List">
+        brief,counter_price,id,is_hot,is_new,name,pic_url,retail_price
+    </sql>
+
+    <!--getListRecord-->
+    <select id="getListRecord"  resultMap="BaseResultMap">
+        select  <include refid="Base_Column_List"/>
+        from cskaoyan_mall_goods
+        where  id like "%" #{goodsId} "%"
+        order by #{sort}  #{order}
+    </select>
+
+    <select id="getPageBrandsGoodsByIds"  resultMap="BaseResultMap">
+        select  <include refid="Base_Column_List"/>
+        from cskaoyan_mall_goods
+        <where>
+             <if test="isNew!=null">
+              and   is_new = #{isNew}
+            </if>
+            <if test="categoryId!=0">
+             and   category_id = #{categoryId}
+            </if>
+            <if test="keyword!=null">
+                and (keywords like "%"#{keyword}"%"
+                or name like "%"#{keyword}"%")
+            </if>
+        </where>
+        <if test="sort!=null and order!=null">
+            order by ${sort} ${order}
+        </if>
+    </select>
+    <select id="getPageBrandsGoodsById"  resultMap="BaseResultMap">
+        select  <include refid="Base_Column_List"/>
+        from cskaoyan_mall_goods
+        where brand_id = #{brandId}
+    </select>
+
+    <select id="queryAll" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List"/>
+      from cskaoyan_mall_goods
+    </select>
+    <select id="fuzzyQuery" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List"/>
+      from cskaoyan_mall_goods
+      where goods_sn like #{goodsSn} and `name` like #{name}
+    </select>
+    <select id="queryOneById" resultMap="BaseResultMap">
+      select
+      <include refid="Base_Column_List"/>
+      from cskaoyan_mall_goods
+      where id = #{id}
+    </select>
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into cskaoyan_mall_goods
+        (goods_sn,`name`,category_id,brand_id,
+        gallery,keywords,brief,is_on_sale,sort_order,pic_url,share_url,
+        is_new,is_hot,unit,counter_price,retail_price,detail,add_time,
+        update_time,deleted)
+        values
+        (#{goodsSn},#{name},#{categoryId},#{brandId},#{gallery,typeHandler=com.cskaoyan.mall.admin.typeHandler.StringToStingrArrayHandler},
+        #{keywords},#{brief},#{isOnSale},#{sortOrder},#{picUrl},#{shareUrl},#{isNew},#{isHot},
+        #{unit},#{counterPrice},#{retailPrice},#{detail},#{addTime},#{updateTime},#{deleted})
+    </insert>
+    <update id="update">
+        update cskaoyan_mall_goods set
+        goods_sn=#{goods.goodsSn},`name`=#{goods.name},category_id=#{goods.categoryId},
+        brand_id=#{goods.brandId},gallery=#{goods.gallery,typeHandler=com.cskaoyan.mall.admin.typeHandler.StringToStingrArrayHandler},
+        keywords=#{goods.keywords},
+        brief=#{goods.brief},is_on_sale=#{goods.isOnSale},sort_order=#{goods.sortOrder},
+        pic_url=#{goods.picUrl},share_url=#{goods.shareUrl},
+        is_new=#{goods.isNew},is_hot=#{goods.isHot},unit=#{goods.unit},counter_price=#{goods.counterPrice},
+        retail_price=#{goods.retailPrice},detail=#{goods.detail},add_time=#{goods.addTime},
+        update_time=#{goods.updateTime},deleted=#{goods.deleted}
+        where id=#{goods.id}
+
+    </update>
+    <delete id="delete">
+        delete from cskaoyan_mall_goods
+        where id = #{goods.id}
+    </delete>
+
+    <select id="getGoodsNum" resultType="int">
+        select count(*) from cskaoyan_mall_goods
+    </select>
+
+
+    <resultMap id="floorGoodsMap" type="com.cskaoyan.mall.wx.bean.FloorGoods">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <collection property="goodsList" column="id"
+                    select="com.cskaoyan.mall.admin.mapper.GoodsMapper.selectGoodsWxByCategoryId"/>
+    </resultMap>
+    <select id="getWxFloorGoods" resultMap="floorGoodsMap">
+        select id,name from cskaoyan_mall_category
+        where deleted = 0 and level = 'L1'
+        limit 4
+    </select>
+
+    <resultMap id="wxFloorGoodsMap" type="com.cskaoyan.mall.wx.bean.GoodsWx">
+        <id column="gid" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="brief" jdbcType="VARCHAR" property="brief" />
+        <result column="pic_url" jdbcType="VARCHAR" property="picUrl" />
+        <result column="is_new" jdbcType="VARCHAR" property="isNew" />
+        <result column="is_hot" jdbcType="VARCHAR" property="isHot" />
+        <result column="counter_price" jdbcType="VARCHAR" property="counterPrice" />
+        <result column="retail_price" jdbcType="VARCHAR" property="retailPrice" />
+    </resultMap>
+    <select id="selectGoodsWxByCategoryId" resultMap="wxFloorGoodsMap">
+        select
+	      g.brief,g.counter_price,g.id AS gid,g.is_hot,g.is_new,g.name,g.pic_url,g.retail_price,
+	      c.id AS cid,c.pid
+        from cskaoyan_mall_goods g
+        left join cskaoyan_mall_category c
+        on g.category_id = c.id
+		where g.deleted = 0 and c.deleted = 0 and pid = #{id}
+		limit 4
+    </select>
+
+    <resultMap id="wxGoodsMap" type="com.cskaoyan.mall.wx.bean.GoodsWx">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="brief" jdbcType="VARCHAR" property="brief" />
+        <result column="pic_url" jdbcType="VARCHAR" property="picUrl" />
+        <result column="is_new" jdbcType="VARCHAR" property="isNew" />
+        <result column="is_hot" jdbcType="VARCHAR" property="isHot" />
+        <result column="counter_price" jdbcType="VARCHAR" property="counterPrice" />
+        <result column="retail_price" jdbcType="VARCHAR" property="retailPrice" />
+    </resultMap>
+    <select id="getWxHotGoodsList" resultMap="wxGoodsMap">
+        select <include refid="WxGoods_Column_List"/>
+        from cskaoyan_mall_goods
+        where deleted = 0 and is_hot = 1
+        limit 5
+    </select>
+
+
+    <select id="getWxNewGoodsList" resultMap="wxGoodsMap">
+        select <include refid="WxGoods_Column_List"/>
+        from cskaoyan_mall_goods
+        where deleted = 0 and is_new = 1
+        limit 6
+    </select>
+
+    <!--getGoodsWx-->
+    <resultMap id="GoodsToGroupon" type="com.cskaoyan.mall.admin.bean.GoodsToGroupon">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="brief" jdbcType="VARCHAR" property="brief" />
+        <result column="pic_url" jdbcType="VARCHAR" property="picUrl" />
+        <result column="counter_price" jdbcType="VARCHAR" property="counterPrice" />
+        <result column="retail_price" jdbcType="VARCHAR" property="retailPrice" />
+    </resultMap>
+    <select id="getGoodsWx" resultMap="GoodsToGroupon">
+        select brief,counter_price,id ,name , pic_url,retail_price
+        from  cskaoyan_mall_goods
+        where id = #{goodsId}
+    </select>
+
+    <select id="getCategoryIdByGoodsId" resultType="java.lang.Integer">
+        select category_id
+        from cskaoyan_mall_goods
+        where deleted = 0 and id = #{goodsId}
+    </select>
+
+    <select id="getWxRelatedGoodsByCategoryId" resultMap="wxGoodsMap">
+        select <include refid="WxGoods_Column_List"/>
+        from cskaoyan_mall_goods
+        where deleted = 0 and category_id = #{categoryId}
+        limit 6
+    </select>
+
+
+</mapper>
